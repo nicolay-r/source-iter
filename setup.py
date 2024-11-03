@@ -4,15 +4,6 @@ from setuptools import (
 )
 
 
-def get_requirements(filenames):
-    r_total = []
-    for filename in filenames:
-        with open(filename) as f:
-            r_local = f.read().splitlines()
-            r_total.extend(r_local)
-    return r_total
-
-
 setup(
     name='source_iter',
     version='0.24.0',
@@ -31,6 +22,5 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
     keywords='data-iterators',
-    packages=find_packages(),
-    install_requires=get_requirements(['dependencies.txt'])
+    packages=find_packages()
 )
