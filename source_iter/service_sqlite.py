@@ -17,8 +17,12 @@ class SQLiteProvider(object):
 
     @staticmethod
     def write_missed(data_it, target, data2col_func, table_name, id_column_name="id",
-                     id_column_type="INTEGER", columns=None, create_table_if_not_exist=True,
+                     id_column_type="INTEGER", sqlite3_column_types=None,
+                     columns=None, create_table_if_not_exist=True,
                      **connect_kwargs):
+
+        # Setting up default column types.
+        sqlite3_column_types = ["TEXT"] * len(columns) if sqlite3_column_types is None else sqlite3_column_types
 
         with sqlite3.connect(target, **connect_kwargs) as con:
             cur = con.cursor()
@@ -42,7 +46,7 @@ class SQLiteProvider(object):
                     SQLiteProvider.__create_table(
                         columns=columns, table_name=table_name, cur=cur,
                         id_column_name=id_column_name, id_column_type=id_column_type,
-                        sqlite3_column_types=["TEXT"] * len(columns))
+                        sqlite3_column_types=sqlite3_column_types)
 
                 # Check that each rows satisfies criteria of the first row.
                 [Exception(f"{column} is expected to be in row!") for column in row_columns if column not in columns]
