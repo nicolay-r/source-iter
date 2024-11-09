@@ -6,7 +6,7 @@ from setuptools import (
 
 setup(
     name='source_iter',
-    version='0.24.0',
+    version='0.24.1',
     python_requires=">=3.6",
     description='This is a tiny Python package that serves read/write iterators '
                 'for most mandatory sources via default packages like CSV / JSONL / SQLite',
