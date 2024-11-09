@@ -12,7 +12,4 @@ def it_json_data():
 
 # Save content.
 header = ["entity"]
-CsvService.write(join(TEST_DATA_DIR, "write_sample.csv"),
-                 header=header,
-                 data2col_func=lambda dict_data: [dict_data[c] for c in header],
-                 data_it=it_json_data())
+CsvService.write(join(TEST_DATA_DIR, "write_sample.csv"), header=header, data_it=it_json_data(), it_type="dict")
