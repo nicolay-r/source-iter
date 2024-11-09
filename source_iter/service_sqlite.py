@@ -21,16 +21,15 @@ class SQLiteProvider(object):
         cur.execute(f"CREATE INDEX IF NOT EXISTS [{id_column_name}] ON {table_name}([{id_column_name}])")
 
     @staticmethod
-    def write_missed(data_it, target, table_name, columns, data2col_func=None, id_column_name="id",
+    def write_missed(data_it, target, table_name, columns=None, data2col_func=None, id_column_name="id",
                      id_column_type="INTEGER", sqlite3_column_types=None, it_type='dict',
                      create_table_if_not_exist=True, **connect_kwargs):
 
-        # Register ID column.
-        if id_column_name not in columns:
-            columns.append(id_column_name)
+        need_set_column_id = True
+        need_initialize_columns = columns is None
 
-        # Place ID column first.
-        columns.insert(0, columns.pop(columns.index(id_column_name)))
+        # Setup default columns.
+        columns = [] if columns is None else columns
 
         with sqlite3.connect(target, **connect_kwargs) as con:
             cur = con.cursor()
@@ -44,6 +43,9 @@ class SQLiteProvider(object):
                     row_columns = list(data.keys())
                     row_params_func = lambda: [data2col_func(c, data) if data2col_func is not None else data[c]
                                                for c in row_columns]
+                    # Append columns if needed.
+                    if need_initialize_columns:
+                        columns = list(row_columns)
                 elif it_type is None:
                     # Setup row columns.
                     uid, data = content
@@ -52,7 +54,13 @@ class SQLiteProvider(object):
                 else:
                     raise Exception(f"it_type {it_type} does not supported!")
 
-                assert (id_column_name in row_columns)
+                if need_set_column_id:
+                    # Register ID column.
+                    if id_column_name not in columns:
+                        columns.append(id_column_name)
+                    # Place ID column first.
+                    columns.insert(0, columns.pop(columns.index(id_column_name)))
+                    need_set_column_id = False
 
                 if create_table_if_not_exist:
                     SQLiteProvider.__create_table(
