@@ -1,7 +1,7 @@
 import sqlite3
 
 
-class SQLiteProvider(object):
+class SQLite3Service(object):
 
     @staticmethod
     def __create_table(table_name, columns, id_column_name,
@@ -63,7 +63,7 @@ class SQLiteProvider(object):
                     need_set_column_id = False
 
                 if create_table_if_not_exist:
-                    SQLiteProvider.__create_table(
+                    SQLite3Service.__create_table(
                         columns=columns, table_name=table_name, cur=cur,
                         id_column_name=id_column_name, id_column_type=id_column_type,
                         sqlite3_column_types=sqlite3_column_types)
