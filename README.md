@@ -4,10 +4,14 @@
 [![PyPI downloads](https://img.shields.io/pypi/dm/source-iter.svg)](https://pypistats.org/packages/source-iter)
 
 
-This is a tiny Python package that serves read/write iterators for most mandatory sources via default packages like CSV / JSONL / SQLite
+A tiny Python package that serves **reading / writing iterators** for the most mandatory sources (`CSV` / `JSONL` / `SQLite`) via the native libraries.
 
 # Installation
 
 ```bash
 pip install source-iter 
 ```
+
+# Usage
+
+Proceed with the [📙 GoogleColab Example](https://github.com/nicolay-r/source-iter/blob/master/source_iter_tutorial.ipynb)
