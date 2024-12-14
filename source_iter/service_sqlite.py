@@ -21,9 +21,14 @@ class SQLite3Service(object):
         cur.execute(f"CREATE INDEX IF NOT EXISTS [{id_column_name}] ON {table_name}([{id_column_name}])")
 
     @staticmethod
-    def write_missed(data_it, target, table_name, columns=None, id_column_name="id",
-                     id_column_type="INTEGER", sqlite3_column_types=None, it_type='dict',
-                     create_table_if_not_exist=True, **connect_kwargs):
+    def __it_row_lists(cursor):
+        for row in cursor:
+            yield row
+
+    @staticmethod
+    def write(data_it, target, table_name, columns=None, id_column_name="id", data2col_func=None,  
+              id_column_type="INTEGER", sqlite3_column_types=None, it_type='dict',
+              create_table_if_not_exist=True, skip_existed=True, **connect_kwargs):
 
         need_set_column_id = True
         need_initialize_columns = columns is None
@@ -38,10 +43,10 @@ class SQLite3Service(object):
 
                 if it_type == 'dict':
                     # Extracting columns from data.
-                    data = content
-                    uid = data[id_column_name]
+                    uid, data = data[id_column_name], content
                     row_columns = list(data.keys())
-                    row_params_func = lambda: [data[c] for c in row_columns]
+                    row_params_func = lambda: [data2col_func(c, data) if data2col_func is not None else data[c]
+                                               for c in row_columns]
                     # Append columns if needed.
                     if need_initialize_columns:
                         columns = list(row_columns)
@@ -70,15 +75,21 @@ class SQLite3Service(object):
                 # Check that each rows satisfies criteria of the first row.
                 [Exception(f"{column} is expected to be in row!") for column in row_columns if column not in columns]
 
-                r = cur.execute(f"SELECT EXISTS(SELECT 1 FROM {table_name} WHERE [{id_column_name}]='{uid}');")
-                ans = r.fetchone()[0]
-                if ans == 1:
-                    continue
+                if skip_existed:
+                    r = cur.execute(f"SELECT EXISTS(SELECT 1 FROM {table_name} WHERE [{id_column_name}]='{uid}');")
+                    ans = r.fetchone()[0]
+
+                    if ans == 1:
+                        continue
 
                 params = ", ".join(tuple(['?'] * (len(columns))))
                 row_columns_str = ", ".join([f"[{col}]" for col in row_columns])
-                cur.execute(f"INSERT INTO {table_name}({row_columns_str}) VALUES ({params})", row_params_func())
+                content_list = row_params_func()
+                cur.execute(f"INSERT INTO {table_name}({row_columns_str}) VALUES ({params})", content_list)
                 con.commit()
+
+                # yield content first.
+                yield content_list
 
             cur.close()
 
@@ -87,8 +98,8 @@ class SQLite3Service(object):
         with sqlite3.connect(src, **connect_kwargs) as conn:
             cursor = conn.cursor()
             cursor.execute(f"SELECT * FROM {table}")
-            for row in cursor:
-                yield row
+            for record_list in SQLite3Service.__it_row_lists(cursor):
+                yield record_list
 
     @staticmethod
     def read_columns(target, table="content", **connect_kwargs):
