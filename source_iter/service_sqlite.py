@@ -88,9 +88,6 @@ class SQLite3Service(object):
                 cur.execute(f"INSERT INTO {table_name}({row_columns_str}) VALUES ({params})", content_list)
                 con.commit()
 
-                # yield content first.
-                yield content_list
-
             cur.close()
 
     @staticmethod
