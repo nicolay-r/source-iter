@@ -21,7 +21,7 @@ class SQLite3Service(object):
         cur.execute(f"CREATE INDEX IF NOT EXISTS [{id_column_name}] ON {table_name}([{id_column_name}])")
 
     @staticmethod
-    def write_missed(data_it, target, table_name, columns=None, data2col_func=None, id_column_name="id",
+    def write_missed(data_it, target, table_name, columns=None, id_column_name="id",
                      id_column_type="INTEGER", sqlite3_column_types=None, it_type='dict',
                      create_table_if_not_exist=True, **connect_kwargs):
 
@@ -41,8 +41,7 @@ class SQLite3Service(object):
                     data = content
                     uid = data[id_column_name]
                     row_columns = list(data.keys())
-                    row_params_func = lambda: [data2col_func(c, data) if data2col_func is not None else data[c]
-                                               for c in row_columns]
+                    row_params_func = lambda: [data[c] for c in row_columns]
                     # Append columns if needed.
                     if need_initialize_columns:
                         columns = list(row_columns)
