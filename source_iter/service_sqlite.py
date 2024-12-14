@@ -43,7 +43,8 @@ class SQLite3Service(object):
 
                 if it_type == 'dict':
                     # Extracting columns from data.
-                    uid, data = data[id_column_name], content
+                    data = content
+                    uid = data[id_column_name]
                     row_columns = list(data.keys())
                     row_params_func = lambda: [data2col_func(c, data) if data2col_func is not None else data[c]
                                                for c in row_columns]
