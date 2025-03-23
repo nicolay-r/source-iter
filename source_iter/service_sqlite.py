@@ -26,7 +26,27 @@ class SQLite3Service(object):
             yield row
 
     @staticmethod
-    def write(data_it, target, table_name, columns=None, id_column_name="id", data2col_func=None,  
+    def create_table_if_not_exist(**kwargs):
+        return SQLite3Service.__create_table(**kwargs)
+
+    @staticmethod
+    def entry_exist(table_name, target, id_column_name, id_value, **connect_kwargs) -> bool:
+        with sqlite3.connect(target, **connect_kwargs) as con:
+            cursor = con.cursor()
+
+            # Check table existence.
+            query = "SELECT name FROM sqlite_master WHERE type='table' AND name=?"
+            cursor.execute(query, (table_name,))
+            if cursor.fetchone() is None:
+                return False
+
+            # Check element.
+            r = cursor.execute(f"SELECT EXISTS(SELECT 1 FROM {table_name} WHERE [{id_column_name}]='{id_value}');")
+            ans = r.fetchone()[0]
+            return ans == 1
+
+    @staticmethod
+    def write(data_it, target, table_name, columns=None, id_column_name="id", data2col_func=None,
               id_column_type="INTEGER", sqlite3_column_types=None, it_type='dict',
               create_table_if_not_exist=True, skip_existed=True, **connect_kwargs):
 
@@ -104,4 +124,4 @@ class SQLite3Service(object):
         with sqlite3.connect(target, **connect_kwargs) as conn:
             cursor = conn.cursor()
             cursor.execute(f"PRAGMA table_info({table})")
-            return [row[1] for row in cursor.fetchall()]
+            return [row[1] for row in cursor.fetchall()]eturn [row[1] for row in cursor.fetchall()]
